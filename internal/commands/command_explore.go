@@ -7,6 +7,7 @@ import (
 	"net/http"
 )
 
+// used json to Go struct to generate struct
 type LocationArea struct {
 	EncounterMethodRates []struct {
 		EncounterMethod struct {
@@ -61,17 +62,36 @@ type LocationArea struct {
 }
 
 func CommandExplore(conf *Config) error {
-	fetchEncounters("mt-coronet-1f-route-207")
+	pokeCache, ok := conf.PokeCache.Get(conf.Action)
+	if ok {
+		locationArea, err := unMarshalLocationAreaFromBytes(pokeCache)
+		if err != nil {
+			return fmt.Errorf("%w", err)
+		}
+		printEncounters(locationArea)
+	} else {
+		err := fetchEncounters(conf)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
+func unMarshalLocationAreaFromBytes(dat []byte) (LocationArea, error) {
+	locationArea := LocationArea{}
+	if err := json.Unmarshal(dat, &locationArea); err != nil {
+		return LocationArea{}, fmt.Errorf("Failed to unmarshal body: %w", err)
+	}
+	return locationArea, nil
+}
 
-func fetchEncounters(locAreaString string) error {
+func fetchEncounters(conf *Config) error {
 
-	fullUrl := "https://pokeapi.co/api/v2/location-area/" + locAreaString
+	fullUrl := "https://pokeapi.co/api/v2/location-area/" + conf.Action
 
 	res, err := http.Get(fullUrl)
 	if err != nil {
-
 		return fmt.Errorf("Failed to get enconters in location area %w", err)
 	}
 	defer res.Body.Close()
@@ -80,18 +100,21 @@ func fetchEncounters(locAreaString string) error {
 		return fmt.Errorf("Failed to read response body: %w", err)
 	}
 
-	var locationArea LocationArea
-
-	if err := json.Unmarshal(dat, &locationArea); err != nil {
-
-		return fmt.Errorf("Failed to unmarshal body: %w", err)
+	locationArea, err := unMarshalLocationAreaFromBytes(dat)
+	if err != nil {
+		return fmt.Errorf("%w", err)
 	}
+	conf.PokeCache.Add(conf.Action, dat)
+	printEncounters(locationArea)
+	return nil
+}
+
+func printEncounters(locationArea LocationArea) {
 	fmt.Println("Pokemon available in location-area:")
 
 	for i, encounter := range locationArea.PokemonEncounters {
-
 		fmt.Printf("%v: %s\n", i, encounter.Pokemon.Name)
 
 	}
-	return nil
+
 }

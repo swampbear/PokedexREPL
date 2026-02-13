@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-type Cities struct {
+type Locations struct {
 	Count    int    `json:"count"`
 	Next     string `json:"next"`
 	Previous string `json:"previous"`
@@ -28,49 +28,45 @@ func fetchMaps(url string, conf *Config) error {
 	if err != nil {
 		return fmt.Errorf("Error reading response body: %w", err)
 	}
-	cities, err := parseCitiesFromBytes(dat)
+	locations, err := parseLocationsFromBytes(dat)
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
 
 	conf.PokeCache.Add(url, dat)
 
-	conf.Next = cities.Next
-	conf.Previous = cities.Previous
+	conf.Next = locations.Next
+	conf.Previous = locations.Previous
 	if conf.Previous == "" {
 		fmt.Println("you're on the first page")
 	}
 
-	for _, pkmaps := range cities.Results {
-		fmt.Println(pkmaps.Name)
-	}
+	printLocations(locations)
 	return nil
 
 }
 
-func parseCitiesFromBytes(dat []byte) (Cities, error) {
-	cities := Cities{}
-	if err := json.Unmarshal(dat, &cities); err != nil {
-		return Cities{}, fmt.Errorf("Failed to unmarshal body %w", err)
+func parseLocationsFromBytes(dat []byte) (Locations, error) {
+	locations := Locations{}
+	if err := json.Unmarshal(dat, &locations); err != nil {
+		return Locations{}, fmt.Errorf("Failed to unmarshal body %w", err)
 	}
-	return cities, nil
+	return locations, nil
 }
 
 func CommandMap(conf *Config) error {
 	url := conf.Next
 	pokeCache, ok := conf.PokeCache.Get(url)
 	if ok {
-		cities, err := parseCitiesFromBytes(pokeCache)
+		locations, err := parseLocationsFromBytes(pokeCache)
 		if err != nil {
 			return fmt.Errorf("%w", err)
 		}
-		conf.Next = cities.Next
-		conf.Previous = cities.Previous
+		conf.Next = locations.Next
+		conf.Previous = locations.Previous
 
-		fmt.Println("THIS WAS CACHES")
-		for _, pkmaps := range cities.Results {
-			fmt.Println(pkmaps.Name)
-		}
+		printLocations(locations)
+
 	} else {
 		err := fetchMaps(url, conf)
 		if err != nil {
@@ -90,16 +86,14 @@ func CommandBMap(conf *Config) error {
 
 	pokeCache, ok := conf.PokeCache.Get(url)
 	if ok {
-		cities, err := parseCitiesFromBytes(pokeCache)
+		locations, err := parseLocationsFromBytes(pokeCache)
 		if err != nil {
 			return fmt.Errorf("%w", err)
 		}
-		conf.Next = cities.Next
-		conf.Previous = cities.Previous
+		conf.Next = locations.Next
+		conf.Previous = locations.Previous
+		printLocations(locations)
 
-		for _, pkmaps := range cities.Results {
-			fmt.Println(pkmaps.Name)
-		}
 	} else {
 		err := fetchMaps(url, conf)
 		if err != nil {
@@ -107,5 +101,12 @@ func CommandBMap(conf *Config) error {
 		}
 	}
 	return nil
+
+}
+
+func printLocations(locations Locations) {
+	for _, pkmaps := range locations.Results {
+		fmt.Println(pkmaps.Name)
+	}
 
 }

@@ -26,6 +26,10 @@ func startREPL() {
 		}
 		words := cleanInput(scanner.Text())
 		cmd_txt := words[0]
+		// assign second word in cmd_txt to action in the config
+		if len(words) > 1 {
+			c.Action = words[1]
+		}
 		cmd, exists := commands.GetCommands()[cmd_txt]
 		if exists {
 			err := cmd.Callback(c)
@@ -43,7 +47,7 @@ func startREPL() {
 
 func cleanInput(text string) []string {
 	new_text := strings.ToLower(text)
-	// Fields separates strings into a slice of strings separated by spaces
+	// .Fields separates strings into a slice of strings separated by spaces
 	words := strings.Fields(new_text)
 	return words
 }

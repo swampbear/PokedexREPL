@@ -3,6 +3,7 @@ package commands
 import "github.com/swampbear/pokedexcli/internal/pokecache"
 
 type Config struct {
+	Action    string
 	PokeCache pokecache.Cache
 	Next      string
 	Previous  string
