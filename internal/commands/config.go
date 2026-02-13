@@ -1,8 +1,11 @@
 package commands
 
+import "github.com/swampbear/pokedexcli/internal/pokecache"
+
 type Config struct {
-	Next     string
-	Previous string
+	PokeCache pokecache.Cache
+	Next      string
+	Previous  string
 }
 
 // CliCommand is a struct for standardizing cli commands
@@ -33,6 +36,11 @@ func GetCommands() map[string]CliCommand {
 			Name:        "bmap",
 			Description: "Lists previous citites",
 			Callback:    CommandBMap,
+		},
+		"explore": {
+			Name:        "explore",
+			Description: "Lists previous cities",
+			Callback:    CommandExplore,
 		},
 	}
 }
