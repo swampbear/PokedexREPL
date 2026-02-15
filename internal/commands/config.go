@@ -1,8 +1,12 @@
 package commands
 
-import "github.com/swampbear/pokedexcli/internal/pokecache"
+import (
+	"github.com/swampbear/pokedexcli/internal/models"
+	"github.com/swampbear/pokedexcli/internal/pokecache"
+)
 
 type Config struct {
+	Pokedex   map[string]models.Pokemon
 	Action    string
 	PokeCache pokecache.Cache
 	Next      string
@@ -42,6 +46,21 @@ func GetCommands() map[string]CliCommand {
 			Name:        "explore",
 			Description: "Lists previous cities",
 			Callback:    CommandExplore,
+		},
+		"catch": {
+			Name:        "catch",
+			Description: "Command for catching pokemon given as second argument",
+			Callback:    CommandCatch,
+		},
+		"inspect": {
+			Name:        "inspect",
+			Description: "Inspect details of a given pokemon in your pokedex",
+			Callback:    CommandInspect,
+		},
+		"pokedex": {
+			Name:        "pokedex",
+			Description: "Lists out all caught pokemon",
+			Callback:    CommandPokedex,
 		},
 	}
 }

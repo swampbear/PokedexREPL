@@ -3,11 +3,13 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/swampbear/pokedexcli/internal/commands"
-	"github.com/swampbear/pokedexcli/internal/pokecache"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/swampbear/pokedexcli/internal/commands"
+	"github.com/swampbear/pokedexcli/internal/models"
+	"github.com/swampbear/pokedexcli/internal/pokecache"
 )
 
 var c *commands.Config
@@ -15,9 +17,11 @@ var c *commands.Config
 func startREPL() {
 	// starts scanner and application loop for user interaction
 
+	pokedex := map[string]models.Pokemon{}
 	interval := time.Second * 5
 	cache := pokecache.NewCache(interval)
-	c = &commands.Config{PokeCache: cache, Next: "https://pokeapi.co/api/v2/location-area/?limit=20&offset=0"}
+	c = &commands.Config{Pokedex: pokedex, PokeCache: cache, Next: "https://pokeapi.co/api/v2/location-area/?limit=20&offset=0"}
+
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
 		fmt.Print("Pokedex > ")
